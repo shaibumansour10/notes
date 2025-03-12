@@ -13,10 +13,14 @@ export const verifySession = cache(async () => {
     redirect('/login')
   }
  
-  return { isAuth: true, userId: session.userId }
+  return { isAuth: true, userId: session.userId ,data:{
+    id: true,
+        name: true,
+        email: true,
+  }}
 })
 
-export const getUser = cache(async () => {
+export const getAuthUser = cache(async () => {
   const session = await verifySession()
   if (!session) return null
   const id = session.userId
@@ -24,17 +28,17 @@ export const getUser = cache(async () => {
   try {
     const data = await db.usersfindUnique({
       where:{
-        id:session.userId??""
+        id:session.userId as string
       },
       // Explicitly return the columns you need rather than the whole user object
       select: {
-        id: true,
-        name: true,
-        email: true,
+        id: session.userId as string,
+        name: session.fullname as string ,
+        email: session.email as string,
       },
     })
  
-    const user = data[0]
+    const user = data
  
     return user
   } catch (error) {
